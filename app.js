@@ -51,7 +51,7 @@ fetch('data/dados.geojson?' + new Date().getTime())
 // FUNÇÃO QUE CONSTRÓI O GRÁFICO CHART.JS
 function gerarGraficoDashboard(geojson) {
     
-    // Varre o GeoJSON e cria uma lista com os Nomes (ou com o número do CAR cortado, para caber no gráfico)
+    // Varre o GeoJSON e cria uma lista com os rótulos
     const rotulosGrafico = geojson.features.map(f => {
         if (f.properties.nome) {
             return f.properties.nome;
@@ -70,14 +70,14 @@ function gerarGraficoDashboard(geojson) {
     
     // Desenha o gráfico de barras
     new Chart(contexto, {
-        type: 'bar', // Tipo de gráfico: barras
+        type: 'bar', // Tipo de gráfico
         data: {
-            labels: rotulosGrafico, // O eixo horizontal (Nomes/Recibos)
+            labels: rotulosGrafico,
             datasets: [{
                 label: 'Área em Hectares (ha)',
-                data: valoresGrafico, // O eixo vertical (Valores)
-                backgroundColor: '#4CAF50', // Cor verde ambiental
-                borderRadius: 4 // Deixa as pontas das barras arredondadas
+                data: valoresGrafico,
+                backgroundColor: '#4CAF50',
+                borderRadius: 4
             }]
         },
         options: {
