@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geoportal Ambiental</title>
+    
+    <!-- CSS do Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Nosso CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <!-- Área do Mapa -->
+        <div id="map"></div>
+        
+        <!-- Painel Lateral (Dashboard) -->
+        <div class="sidebar">
+            <h2>Dashboard Ambiental</h2>
+            <p>Análise de áreas em hectares.</p>
+            <!-- Área do Gráfico -->
+            <canvas id="meuGrafico"></canvas>
+        </div>
+    </div>
+
+    <!-- Scripts do Leaflet e Chart.js -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Nosso Script -->
+    <script src="app.js"></script>
+</body>
+</html>

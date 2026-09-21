@@ -1,0 +1,34 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container {
+    display: flex;
+    height: 100vh; /* Ocupa 100% da altura da tela */
+    background-color: #1e1e2f; /* Fundo escuro moderno */
+    color: white;
+}
+
+#map {
+    flex: 3; /* O mapa ocupa 3 partes da tela */
+    height: 100%;
+}
+
+.sidebar {
+    flex: 1; /* A barra lateral ocupa 1 parte */
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px); /* Estilo glassmorphism */
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+h2 {
+    font-size: 1.5rem;
+    color: #4CAF50;
+}
