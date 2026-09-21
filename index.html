@@ -4,33 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Ambiental</title>
-    
-    <!-- CSS do Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Nosso CSS (com código para ignorar cache) -->
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
     <div class="container">
-        <!-- Área do Mapa -->
         <div id="map"></div>
         
-        <!-- Painel Lateral -->
         <div class="sidebar">
             <h2>Dashboard do CAR</h2>
-            <p>Análise de áreas em hectares.</p>
             
-            <!-- É AQUI QUE O GRÁFICO VAI APARECER -->
+            <!-- NOVOS BLOCOS DE RESUMO -->
+            <div class="resumo-container">
+                <div class="card">
+                    <p>Propriedades</p>
+                    <h3 id="total-prop">0</h3>
+                </div>
+                <div class="card">
+                    <p>Área Total</p>
+                    <h3 id="total-area">0 ha</h3>
+                </div>
+            </div>
+            
             <canvas id="meuGrafico"></canvas>
         </div>
     </div>
 
-    <!-- Scripts do Leaflet e Chart.js -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Nosso Script (com código para ignorar cache) -->
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>
