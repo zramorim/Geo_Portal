@@ -1,23 +1,122 @@
-// 6. FUNÇÃO DE GERAÇÃO DO PDF
+const map = L.map('map').setView([-14.86, -42.58], 5); 
+
+const mapaSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri' });
+const mapaRuas = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' });
+const mapaTopografico = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { attribution: '© OpenTopoMap' });
+
+mapaSatelite.addTo(map);
+L.control.layers({ "Satélite": mapaSatelite, "Ruas": mapaRuas, "Topográfico": mapaTopografico }).addTo(map);
+
+let camadasPoligonos = []; 
+const estiloPadrao = { color: "#22c55e", weight: 3, fillOpacity: 0.2 }; 
+const estiloDestaque = { color: "#FFD700", weight: 5, fillOpacity: 0.6 }; 
+
+fetch('data/dados.geojson?' + new Date().getTime())
+    .then(response => response.json())
+    .then(data => {
+        const camadaLimite = L.geoJSON(data, {
+            style: estiloPadrao,
+            onEachFeature: function (feature, layer) {
+                camadasPoligonos.push(layer); 
+                if (feature.properties) {
+                    const area = Number(feature.properties.Area_ha || 0).toFixed(2);
+                    const recibo = feature.properties.recibo || "Sem recibo";
+                    const nome = feature.properties.nome || "Não informado";
+                    const email = feature.properties.email || "Não informado";
+                    const cpf = feature.properties.cpf || "Não informado";
+                    
+                    const textoPopup = `
+                        <div style="font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+                            <h3 style="color: #22c55e; margin-bottom: 5px; border-bottom: 2px solid #22c55e;">Detalhes do CAR</h3>
+                            <b>Proprietário:</b> ${nome}<br>
+                            <b>CPF:</b> ${cpf}<br>
+                            <b>E-mail:</b> ${email}<br>
+                            <hr style="border: 0; border-top: 1px solid #eee; margin: 8px 0;">
+                            <b>Recibo CAR:</b> <span style="font-size: 11px;">${recibo}</span><br>
+                            <b>Área:</b> ${area} ha
+                        </div>
+                    `;
+                    layer.bindPopup(textoPopup);
+                }
+            }
+        }).addTo(map);
+
+        if (camadaLimite.getLayers().length > 0) {
+            map.fitBounds(camadaLimite.getBounds());
+        }
+        
+        gerarGraficoDashboard(data, camadasPoligonos);
+        atualizarResumo(data);
+    })
+    .catch(err => console.error("Erro ao carregar o mapa:", err));
+
+
+function atualizarResumo(geojson) {
+    const totalPropriedades = geojson.features.length; 
+    let areaTotal = 0;
+    geojson.features.forEach(f => {
+        areaTotal += Number(f.properties.Area_ha || 0); 
+    });
+
+    document.getElementById('total-prop').innerText = totalPropriedades;
+    document.getElementById('total-area').innerText = areaTotal.toFixed(2) + " ha";
+}
+
+function gerarGraficoDashboard(geojson, camadasRef) {
+    const rotulosGrafico = geojson.features.map(f => {
+        if (f.properties.nome) return f.properties.nome;
+        if (f.properties.recibo) return f.properties.recibo.substring(0, 15) + "...";
+        return "Propriedade";
+    });
+    
+    const valoresGrafico = geojson.features.map(f => Number(f.properties.Area_ha || 0));
+    const contexto = document.getElementById('meuGrafico').getContext('2d');
+    
+    new Chart(contexto, {
+        type: 'bar',
+        data: {
+            labels: rotulosGrafico,
+            datasets: [{
+                label: 'Área (ha)',
+                data: valoresGrafico,
+                backgroundColor: '#22c55e', 
+                hoverBackgroundColor: '#FFD700', 
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            onHover: (event, activeElements) => {
+                camadasRef.forEach(layer => layer.setStyle(estiloPadrao));
+                if (activeElements.length > 0) {
+                    const index = activeElements[0].index;
+                    camadasRef[index].setStyle(estiloDestaque);
+                    camadasRef[index].bringToFront(); 
+                }
+            },
+            plugins: { legend: { labels: { color: '#e2e8f0' } } },
+            scales: {
+                y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+            }
+        }
+    });
+}
+
 function gerarPDF() {
-    // Esconde os controles do mapa (botões de zoom) antes de tirar a foto
     const controlesMapa = document.querySelector('.leaflet-control-container');
-    controlesMapa.style.display = 'none';
+    if (controlesMapa) controlesMapa.style.display = 'none';
 
-    // Pega a tela inteira (o container) para transformar em PDF
     const elemento = document.getElementById('area-relatorio');
-
-    // Configurações da página do PDF
     const configuracao = {
         margin:       0,
         filename:     'Relatorio_CAR_Itapetinga.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true }, // scale: 2 garante alta resolução
-        jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' } // landscape para caber o mapa e o gráfico lado a lado
+        html2canvas:  { scale: 2, useCORS: true }, 
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' } 
     };
 
-    // Gera o PDF, baixa para o computador e depois liga os controles do mapa de volta
     html2pdf().set(configuracao).from(elemento).save().then(() => {
-        controlesMapa.style.display = 'block';
+        if (controlesMapa) controlesMapa.style.display = 'block';
     });
 }
