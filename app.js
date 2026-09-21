@@ -105,18 +105,25 @@ function gerarGraficoDashboard(geojson, camadasRef) {
 
 function gerarPDF() {
     const controlesMapa = document.querySelector('.leaflet-control-container');
-    if (controlesMapa) controlesMapa.style.display = 'none';
+    
+    // TRAVA DE SEGURANÇA: Só esconde se o mapa existir de fato
+    if (controlesMapa) {
+        controlesMapa.style.display = 'none';
+    }
 
     const elemento = document.getElementById('area-relatorio');
     const configuracao = {
         margin:       0,
-        filename:     'Relatorio_CAR_Itapetinga.pdf',
+        filename:     'Relatorio_CAR.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true }, 
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' } 
     };
 
     html2pdf().set(configuracao).from(elemento).save().then(() => {
-        if (controlesMapa) controlesMapa.style.display = 'block';
+        // Devolve os controles após baixar
+        if (controlesMapa) {
+            controlesMapa.style.display = 'block';
+        }
     });
 }
