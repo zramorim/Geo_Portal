@@ -1,77 +1,30 @@
-// 1. INICIALIZANDO O MAPA
-// As coordenadas iniciais [-14.86, -42.58] centralizam na região da Bahia. Ajuste conforme necessário.
-const map = L.map('map').setView([-14.86, -42.58], 10); 
+// 1. Inicializa o mapa (centralizado inicialmente no Brasil)
+const map = L.map('map').setView([-14.86, -42.58], 5); 
 
-// 2. ADICIONANDO CAMADAS DE FUNDO (Basemaps)
-const mapaRuas = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-});
-
-const mapaSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+// 2. Adiciona o mapa base de Satélite
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     attribution: '© Esri'
-});
+}).addTo(map);
 
-// Adiciona o satélite como padrão
-mapaSatelite.addTo(map);
-
-// Controle para alternar entre as camadas
-const baseMaps = {
-    "Satélite": mapaSatelite,
-    "Ruas": mapaRuas
-};
-L.control.layers(baseMaps).addTo(map);
-
-// 3. CARREGANDO O GEOJSON E GERANDO GRÁFICO INTEGRADo
-fetch('data/dados.geojson')
-    .then(response => response.json())
+// 3. Carrega o ficheiro dados.geojson forçando o download da versão mais recente (ignora a cache)
+fetch('data/dados.geojson?' + new Date().getTime())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Não foi possível aceder ao ficheiro dados.geojson");
+        }
+        return response.json();
+    })
     .then(data => {
-        // Adiciona os polígonos no mapa
-        L.geoJSON(data, {
-            style: function (feature) {
-                return {color: "#4CAF50", weight: 2, fillOpacity: 0.5};
-            },
-            onEachFeature: function (feature, layer) {
-                // Adiciona um popup interativo ao clicar
-                if (feature.properties) {
-                    layer.bindPopup(`<b>Propriedade:</b> ${feature.properties.nome || 'N/A'}<br>
-                                     <b>Área (ha):</b> ${feature.properties.area || 'N/A'}`);
-                }
+        // 4. Desenha o polígono no mapa com uma cor de destaque
+        const camadaLimite = L.geoJSON(data, {
+            style: { 
+                color: "#00FFFF", // Borda azul ciano
+                weight: 3,        // Espessura da linha
+                fillOpacity: 0.2  // Transparência (deixa ver o satélite por baixo)
             }
         }).addTo(map);
 
-        // 4. CRIANDO O GRÁFICO DINÂMICO
-        criarGrafico(data);
+        // 5. Ajusta o zoom e centraliza automaticamente na área do seu polígono
+        map.fitBounds(camadaLimite.getBounds());
     })
-    .catch(err => console.error("Erro ao carregar o GeoJSON:", err));
-
-// Função para extrair atributos do GeoJSON e gerar o gráfico
-function criarGrafico(geojson) {
-    // Exemplo: Coletando nomes e áreas (ha) do seu GeoJSON
-    // (Certifique-se de que os atributos 'nome' e 'area' existem no seu arquivo QGIS)
-    const nomes = geojson.features.map(f => f.properties.nome || 'Desconhecido');
-    const areas = geojson.features.map(f => f.properties.area || 0);
-
-    const ctx = document.getElementById('meuGrafico').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: nomes,
-            datasets: [{
-                label: 'Área em Hectares',
-                data: areas,
-                backgroundColor: '#4CAF50',
-                borderRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { labels: { color: 'white' } }
-            },
-            scales: {
-                y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                x: { ticks: { color: 'white' }, grid: { display: false } }
-            }
-        }
-    });
-}
+    .catch(err => console.error("Erro ao carregar o mapa:", err));
