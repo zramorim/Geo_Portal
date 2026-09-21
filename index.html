@@ -5,17 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Ambiental</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="area-relatorio">
         <div id="map"></div>
         
         <div class="sidebar">
-            <h2>Dashboard do CAR</h2>
+            <div class="cabecalho-sidebar">
+                <h2>Dashboard do CAR</h2>
+                <!-- BOTÃO DE PDF ADICIONADO AQUI -->
+                <button id="btn-pdf" onclick="gerarPDF()">Baixar Relatório (PDF)</button>
+            </div>
             
-            <!-- NOVOS BLOCOS DE RESUMO -->
             <div class="resumo-container">
                 <div class="card">
                     <p>Propriedades</p>
@@ -33,6 +36,9 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="app.js?v=5"></script>
+    <!-- BIBLIOTECA GERADORA DE PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script src="app.js?v=6"></script>
 </body>
 </html>
