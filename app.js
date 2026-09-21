@@ -1,22 +1,42 @@
 // 1. Inicializa o mapa
 const map = L.map('map').setView([-14.86, -42.58], 5); 
 
-// 2. Adiciona o mapa base de Satélite
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+// 2. DEFINE OS MAPAS BASE (Satélite, Ruas e Topográfico)
+const mapaSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     attribution: '© Esri'
-}).addTo(map);
+});
 
-// 3. Carrega o ficheiro GeoJSON sem usar a cache do navegador
+const mapaRuas = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+});
+
+const mapaTopografico = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenTopoMap'
+});
+
+// Define qual mapa vai aparecer primeiro quando o site abrir
+mapaSatelite.addTo(map);
+
+// 3. CRIA O BOTÃO DE CONTROLO DE CAMADAS
+const mapasBase = {
+    "Satélite (Esri)": mapaSatelite,
+    "Ruas (OSM)": mapaRuas,
+    "Topográfico": mapaTopografico
+};
+
+// Adiciona o botão no mapa (geralmente fica no canto superior direito)
+L.control.layers(mapasBase).addTo(map);
+
+// 4. Carrega o ficheiro GeoJSON sem usar a cache do navegador
 fetch('data/dados.geojson?' + new Date().getTime())
     .then(response => response.json())
     .then(data => {
         
-        // 4. DESENHA OS POLÍGONOS E OS POPUPS
+        // DESENHA OS POLÍGONOS E OS POPUPS
         const camadaLimite = L.geoJSON(data, {
             style: { color: "#00FFFF", weight: 3, fillOpacity: 0.2 },
             onEachFeature: function (feature, layer) {
                 if (feature.properties) {
-                    // Extrai as variáveis da tabela de atributos
                     const area = Number(feature.properties.Area_ha || 0).toFixed(2);
                     const recibo = feature.properties.recibo || "Sem recibo";
                     const nome = feature.properties.nome || "Não informado";
@@ -42,7 +62,7 @@ fetch('data/dados.geojson?' + new Date().getTime())
         // Ajusta o zoom da câmara para o polígono
         map.fitBounds(camadaLimite.getBounds());
 
-        // 5. PARTE 5: GERAÇÃO DO GRÁFICO DINÂMICO
+        // GERAÇÃO DO GRÁFICO DINÂMICO
         gerarGraficoDashboard(data);
     })
     .catch(err => console.error("Erro ao carregar o mapa:", err));
@@ -50,8 +70,6 @@ fetch('data/dados.geojson?' + new Date().getTime())
 
 // FUNÇÃO QUE CONSTRÓI O GRÁFICO CHART.JS
 function gerarGraficoDashboard(geojson) {
-    
-    // Varre o GeoJSON e cria uma lista com os rótulos
     const rotulosGrafico = geojson.features.map(f => {
         if (f.properties.nome) {
             return f.properties.nome;
@@ -62,15 +80,12 @@ function gerarGraficoDashboard(geojson) {
         }
     });
     
-    // Varre o GeoJSON e cria uma lista com as Áreas em Hectares
     const valoresGrafico = geojson.features.map(f => Number(f.properties.Area_ha || 0));
 
-    // Encontra o espaço reservado para o gráfico no HTML
     const contexto = document.getElementById('meuGrafico').getContext('2d');
     
-    // Desenha o gráfico de barras
     new Chart(contexto, {
-        type: 'bar', // Tipo de gráfico
+        type: 'bar',
         data: {
             labels: rotulosGrafico,
             datasets: [{
