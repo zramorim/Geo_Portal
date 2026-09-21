@@ -13,19 +13,21 @@
 }
 
 #map {
-    flex: 3; /* O mapa ocupa 3 partes da tela */
+    flex: 3; /* O mapa ocupa a maior parte (3/4) */
     height: 100%;
+    z-index: 1;
 }
 
 .sidebar {
-    flex: 1; /* A barra lateral ocupa 1 parte */
+    flex: 1; /* O painel ocupa a lateral (1/4) */
     padding: 20px;
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px); /* Estilo glassmorphism */
     border-left: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
     gap: 20px;
+    overflow-y: auto; /* Adiciona rolagem se tiver muitos gráficos */
+    z-index: 2;
 }
 
 h2 {
